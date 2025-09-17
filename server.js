@@ -166,11 +166,9 @@ app.post('/usersLink', async (req, res) => {
   }
 });
 
-/*app.listen(3000, () => {
-  console.log('Server running on http://localhost:3000');
-});*/
 
-//Altere o 'localhost' para '0.0.0.0' para permitir conexões de qualquer IP da rede local
-app.listen(3000, '0.0.0.0', () => {
-  console.log(`API rodando na http://0.0.0.0:${3000}`);
+const PORT = process.env.PORT || 3000;
+
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`API rodando na porta ${PORT}`);
 });
