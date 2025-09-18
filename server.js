@@ -30,8 +30,7 @@ app.post('/usersCreate', async (req, res) => {
 //Efetua o login
 app.post('/usersLogin', async (req, res) => {
   try {
-    const { email, password } = req.body
-
+    const { email, password } = req.body;
 
     const user = await prisma.user.findFirst({
       where: {
@@ -101,9 +100,9 @@ app.post('/remindersSearch', async (req, res) => {
 // Retorna o lembrete mais próximo ao horário atual
 app.post('/reminderNearest', async (req, res) => {
   try {
-    const now = new Date();  // Obtemos a hora atual
-    const currentHour = now.getHours();  // Hora atual
-    const currentMinute = now.getMinutes();  // Minuto atual
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinute = now.getMinutes();
 
     // Formata o horário atual no formato HH:mm
     const currentTime = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
@@ -111,28 +110,27 @@ app.post('/reminderNearest', async (req, res) => {
     // Encontra o lembrete mais próximo
     const nearestReminder = await prisma.reminder.findFirst({
       where: {
-        userId: req.body.userId,  // Filtrando pelo userId (se necessário)
+        userId: req.body.userId,
         hour: {
-          gte: currentTime  // Filtra os lembretes com hora maior ou igual à atual
+          gte: currentTime
         }
       },
       orderBy: {
-        hour: 'asc'  // Ordena os lembretes pela hora em ordem crescente
+        hour: 'asc'
       },
-      take: 1  // Pegamos apenas o mais próximo
+      take: 1
     });
 
-    if (nearestReminder.length === 0) {
+    if (!nearestReminder) {
       return res.status(404).json({ error: 'Nenhum Lembrete cadastrado!' });
     }
 
-    res.status(200).json(nearestReminder[0]);  // Retorna o lembrete mais próximo
+    res.status(200).json(nearestReminder);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch nearest reminder' });
   }
 });
-
 
 //Deletar lembretes
 app.post('/remindersDelete', async (req, res) => {
@@ -157,17 +155,16 @@ app.post('/usersLink', async (req, res) => {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { linkedId },
-    })
+    });
 
-    res.status(200).json(updatedUser)
+    res.status(200).json(updatedUser);
   } catch (error) {
-      console.error("Erro ao linkar conta: " + error);
-      res.status(500).json({ error: 'Falha ao linkar contas'})
+    console.error("Erro ao linkar conta: " + error);
+    res.status(500).json({ error: 'Falha ao linkar contas'});
   }
 });
 
-
-// ==================== Inicialização ====================
+// Inicialização
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, '0.0.0.0', () => {
