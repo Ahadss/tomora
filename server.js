@@ -68,7 +68,7 @@ app.post('/usersLogin', async (req, res) => {
 });
 
 // Atualiza link entre usuários
-app.put('/usersLink', async (req, res) => {
+app.post('/usersLink', async (req, res) => {
   try {
     const { userId, linkedId } = req.body;
 
@@ -108,7 +108,7 @@ app.post('/remindersCreate', async (req, res) => {
 });
 
 // Consulta lembretes de um usuário específico (GET com query param)
-app.get('/remindersSearch', async (req, res) => {
+app.post('/remindersSearch', async (req, res) => {
   try {
     const { userId } = req.query;
 
