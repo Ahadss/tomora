@@ -117,7 +117,7 @@ app.get('/remindersSearch', async (req, res) => {
     }
 
     const reminders = await prisma.reminder.findMany({
-      where: { userId: parseInt(userId) }
+      where: { userId: userId }
     });
 
     res.status(200).json(reminders);
