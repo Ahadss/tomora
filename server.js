@@ -8,10 +8,7 @@ app.use(cors());
 
 const prisma = new PrismaClient();
 
-
-// ==================== Usuários ====================
-
-// Cria usuário
+//Cria usuário
 app.post('/usersCreate', async (req, res) => {
   try {
     const user = await prisma.user.create({
@@ -30,25 +27,24 @@ app.post('/usersCreate', async (req, res) => {
   }
 });
 
-// Efetua login (GET com query params)
+//Efetua o login
 app.post('/usersLogin', async (req, res) => {
   try {
-    const { email, password } = req.body; // agora usa query params
+    const { email, password } = req.body
 
-    if (!email || !password) {
-      return res.status(400).json({ error: 'Email e senha são obrigatórios' });
-    }
 
     const user = await prisma.user.findFirst({
-      where: { email: email }
+      where: {
+        email: email
+      }
     });
 
     if (!user) {
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
 
-    const passwordMatch = password === password;
-
+    const passwordMatch = password === user.password;
+    
     if (!passwordMatch) {
       return res.status(401).json({ error: 'Credenciais inválidas' });
     }
@@ -67,27 +63,7 @@ app.post('/usersLogin', async (req, res) => {
   }
 });
 
-// Atualiza link entre usuários
-app.post('/usersLink', async (req, res) => {
-  try {
-    const { userId, linkedId } = req.body;
-
-    const updatedUser = await prisma.user.update({
-      where: { id: userId },
-      data: { linkedId },
-    });
-
-    res.status(200).json(updatedUser);
-  } catch (error) {
-    console.error("Erro ao linkar conta: " + error);
-    res.status(500).json({ error: 'Falha ao linkar contas' });
-  }
-});
-
-
-// ==================== Lembretes ====================
-
-// Cria lembrete
+//Cria lembrete
 app.post('/remindersCreate', async (req, res) => {
   try {
     const reminder = await prisma.reminder.create({
@@ -107,70 +83,86 @@ app.post('/remindersCreate', async (req, res) => {
   }
 });
 
-// Consulta lembretes de um usuário específico (GET com query param)
+//Consulta lembretes de um usuário específico
 app.post('/remindersSearch', async (req, res) => {
   try {
-    const { userId } = req.query;
-
-    if (!userId) {
-      return res.status(400).json({ error: 'userId é obrigatório' });
-    }
-
     const reminders = await prisma.reminder.findMany({
-      where: { userId: userId }
+      where: {
+        userId: req.body.userId
+      }
     });
-
     res.status(200).json(reminders);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Failed to fetch reminders' });
+    res.status(500).json({ error: 'Failed to fetch users' });
   }
 });
 
 // Retorna o lembrete mais próximo ao horário atual
-app.get('/reminderNearest', async (req, res) => {
+app.post('/reminderNearest', async (req, res) => {
   try {
-    const { userId } = req.query;
+    const now = new Date();  // Obtemos a hora atual
+    const currentHour = now.getHours();  // Hora atual
+    const currentMinute = now.getMinutes();  // Minuto atual
 
-    if (!userId) {
-      return res.status(400).json({ error: 'userId é obrigatório' });
-    }
-
-    const now = new Date();
-    const currentHour = now.getHours();
-    const currentMinute = now.getMinutes();
+    // Formata o horário atual no formato HH:mm
     const currentTime = `${String(currentHour).padStart(2, '0')}:${String(currentMinute).padStart(2, '0')}`;
 
+    // Encontra o lembrete mais próximo
     const nearestReminder = await prisma.reminder.findFirst({
       where: {
-        userId: parseInt(userId),
-        hour: { gte: currentTime }
+        userId: req.body.userId,  // Filtrando pelo userId (se necessário)
+        hour: {
+          gte: currentTime  // Filtra os lembretes com hora maior ou igual à atual
+        }
       },
-      orderBy: { hour: 'asc' },
-      take: 1
+      orderBy: {
+        hour: 'asc'  // Ordena os lembretes pela hora em ordem crescente
+      },
+      take: 1  // Pegamos apenas o mais próximo
     });
 
-    if (!nearestReminder) {
-      return res.status(404).json({ error: 'Nenhum lembrete cadastrado!' });
+    if (nearestReminder.length === 0) {
+      return res.status(404).json({ error: 'Nenhum Lembrete cadastrado!' });
     }
 
-    res.status(200).json(nearestReminder);
+    res.status(200).json(nearestReminder[0]);  // Retorna o lembrete mais próximo
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to fetch nearest reminder' });
   }
 });
 
-// Deletar lembrete
-app.delete('/remindersDelete', async (req, res) => {
+
+//Deletar lembretes
+app.post('/remindersDelete', async (req, res) => {
   try {
     await prisma.reminder.delete({
-      where: { id: req.body.id }
+      where: {
+        id: req.body.id
+      }
     });
 
     res.status(200).json({ message: "Lembrete excluído com sucesso." });
   } catch (error) {
     res.status(500).json({ error: "Erro ao excluir lembrete." });
+  }
+});
+
+//Linka usuários
+app.post('/usersLink', async (req, res) => {
+  try {
+    const { userId, linkedId } = req.body;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { linkedId },
+    })
+
+    res.status(200).json(updatedUser)
+  } catch (error) {
+      console.error("Erro ao linkar conta: " + error);
+      res.status(500).json({ error: 'Falha ao linkar contas'})
   }
 });
 
