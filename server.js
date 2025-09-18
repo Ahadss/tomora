@@ -28,7 +28,7 @@ app.post('/usersCreate', async (req, res) => {
 });
 
 //Efetua o login
-app.post('/usersLogin', async (req, res) => {
+app.get('/usersLogin', async (req, res) => {
   try {
     const { email, password } = req.body
 
@@ -84,7 +84,7 @@ app.post('/remindersCreate', async (req, res) => {
 });
 
 //Consulta lembretes de um usuário específico
-app.post('/remindersSearch', async (req, res) => {
+app.get('/remindersSearch', async (req, res) => {
   try {
     const reminders = await prisma.reminder.findMany({
       where: {
@@ -99,7 +99,7 @@ app.post('/remindersSearch', async (req, res) => {
 });
 
 // Retorna o lembrete mais próximo ao horário atual
-app.post('/reminderNearest', async (req, res) => {
+app.get('/reminderNearest', async (req, res) => {
   try {
     const now = new Date();  // Obtemos a hora atual
     const currentHour = now.getHours();  // Hora atual
@@ -135,7 +135,7 @@ app.post('/reminderNearest', async (req, res) => {
 
 
 //Deletar lembretes
-app.post('/remindersDelete', async (req, res) => {
+app.delete('/remindersDelete', async (req, res) => {
   try {
     await prisma.reminder.delete({
       where: {
@@ -150,7 +150,7 @@ app.post('/remindersDelete', async (req, res) => {
 });
 
 //Linka usuários
-app.post('/usersLink', async (req, res) => {
+app.update('/usersLink', async (req, res) => {
   try {
     const { userId, linkedId } = req.body;
 
