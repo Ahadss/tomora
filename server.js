@@ -146,29 +146,11 @@ app.post('/reminderNearest', async (req, res) => {
       return res.status(404).json({ error: 'Nenhum lembrete cadastrado' });
     }
 
-    // Função para calcular a diferença de tempo em minutos
-    const getTimeDifference = (reminderHour, inputHour) => {
-      // Converte horas para minutos desde meia-noite
-      const [reminderH, reminderM] = reminderHour.split(':').map(Number);
-      const [inputH, inputM] = inputHour.split(':').map(Number);
-      const reminderMinutes = reminderH * 60 + reminderM;
-      const inputMinutes = inputH * 60 + inputM;
+    // Encontra o primeiro lembrete futuro (hour >= req.body.hour)
+    const futureReminder = reminders.find(reminder => reminder.hour >= hour);
 
-      // Calcula diferença absoluta
-      let diff = Math.abs(reminderMinutes - inputMinutes);
-      // Considera periodicidade de 24 horas (1440 minutos)
-      if (diff > 720) { // 720 minutos = 12 horas
-        diff = 1440 - diff; // Usa o menor caminho (ex.: 23:30 a 00:30 = 60min)
-      }
-      return diff;
-    };
-
-    // Encontra o lembrete com menor diferença
-    const nearestReminder = reminders.reduce((closest, current) => {
-      const closestDiff = getTimeDifference(closest.hour, hour);
-      const currentDiff = getTimeDifference(current.hour, hour);
-      return currentDiff < closestDiff ? current : closest;
-    });
+    // Se houver lembrete futuro, retorna o primeiro; caso contrário, retorna o primeiro disponível
+    const nearestReminder = futureReminder || reminders[0];
 
     res.status(200).json(nearestReminder);
   } catch (error) {
