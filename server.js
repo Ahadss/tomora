@@ -93,7 +93,6 @@ app.post('/remindersCreate', async (req, res) => {
         dosage: req.body.dosage,
         desc: req.body.desc,
         hour: req.body.hour,
-        days: req.body.days
       }
     });
     res.status(201).json(reminder);
