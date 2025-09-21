@@ -121,12 +121,13 @@ app.post('/remindersSearch', async (req, res) => {
 // Retorna o lembrete mais próximo ao horário atual
 app.post('/reminderNearest', async (req, res) => {
   try {
-    const {currentTime} = req.body.hour;
-    let nearestReminder = await prisma.reminder.findFirst({
+    const hour = req.body.hour;
+    const userId = req.body.userId
+    let  nearestReminder = await prisma.reminder.findFirst({
       where: {
         userId: userId,
         hour: {
-          gte: currentTime, // Lembretes com hora maior ou igual à atual
+          gte: hour, // Lembretes com hora maior ou igual à atual
         },
       },
       orderBy: {
@@ -136,13 +137,25 @@ app.post('/reminderNearest', async (req, res) => {
     });
 
     if (!nearestReminder) {
+      nearestReminder = await prisma.reminder.findFirst({
+        where: {
+          userId: userId,
+        },
+        orderBy: {
+          hour: 'asc',
+        },
+        take: 1,
+      });
+    }
+
+    if (!nearestReminder) {
       return res.status(404).json({ error: 'Nenhum Lembrete cadastrado!' });
     }
 
     res.status(200).json(nearestReminder);
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Falha ao consultar próximo lembrete' });
+    res.status(500).json({ error: 'Falha ao consultar próximo lembrete!' });
   }
 });
 
