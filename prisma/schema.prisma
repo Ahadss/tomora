@@ -30,8 +30,7 @@ model Reminder {
   dosage String
   desc String?
   hour String
-  days Int[]
-  status Boolean? @default(true)
+  callAlexa Boolean @default(false)
 }
 
 model History {
