@@ -121,40 +121,58 @@ app.post('/remindersSearch', async (req, res) => {
 // Retorna o lembrete mais próximo ao horário atual
 app.post('/reminderNearest', async (req, res) => {
   try {
+    // Extração e validação dos dados de entrada
+    const userId = req.body.userId;
     const hour = req.body.hour;
-    const userId = req.body.userId
-    let  nearestReminder = await prisma.reminder.findFirst({
+    if (!userId) {
+      return res.status(400).json({ error: 'userId é obrigatório' });
+    }
+    if (!hour || !/^\d{2}:\d{2}$/.test(hour)) {
+      return res.status(400).json({ error: 'hour deve estar no formato HH:mm' });
+    }
+
+    // Busca todos os lembretes do usuário
+    const reminders = await prisma.reminder.findMany({
       where: {
         userId: userId,
-        hour: {
-          gte: hour, // Lembretes com hora maior ou igual à atual
-        },
       },
       orderBy: {
-        hour: 'asc', // Ordena por hora crescente
+        hour: 'asc',
       },
-      take: 1,
     });
 
-    if (!nearestReminder) {
-      nearestReminder = await prisma.reminder.findFirst({
-        where: {
-          userId: userId,
-        },
-        orderBy: {
-          hour: 'asc',
-        },
-        take: 1,
-      });
+    // Verifica se há lembretes
+    if (!reminders || reminders.length === 0) {
+      return res.status(404).json({ error: 'Nenhum lembrete cadastrado' });
     }
 
-    if (!nearestReminder) {
-      return res.status(404).json({ error: 'Nenhum Lembrete cadastrado!' });
-    }
+    // Função para calcular a diferença de tempo em minutos
+    const getTimeDifference = (reminderHour, inputHour) => {
+      // Converte horas para minutos desde meia-noite
+      const [reminderH, reminderM] = reminderHour.split(':').map(Number);
+      const [inputH, inputM] = inputHour.split(':').map(Number);
+      const reminderMinutes = reminderH * 60 + reminderM;
+      const inputMinutes = inputH * 60 + inputM;
+
+      // Calcula diferença absoluta
+      let diff = Math.abs(reminderMinutes - inputMinutes);
+      // Considera periodicidade de 24 horas (1440 minutos)
+      if (diff > 720) { // 720 minutos = 12 horas
+        diff = 1440 - diff; // Usa o menor caminho (ex.: 23:30 a 00:30 = 60min)
+      }
+      return diff;
+    };
+
+    // Encontra o lembrete com menor diferença
+    const nearestReminder = reminders.reduce((closest, current) => {
+      const closestDiff = getTimeDifference(closest.hour, hour);
+      const currentDiff = getTimeDifference(current.hour, hour);
+      return currentDiff < closestDiff ? current : closest;
+    });
 
     res.status(200).json(nearestReminder);
   } catch (error) {
-    console.error(error);
+    console.error('Erro ao consultar lembrete mais próximo:', error);
     res.status(500).json({ error: 'Falha ao consultar próximo lembrete!' });
   }
 });
