@@ -19,9 +19,7 @@ app.post('/usersCreate', async (req, res) => {
         name: req.body.name,
         password: req.body.password,
         isMedicado: req.body.isMedicado,
-        isAuxiliar: req.body.isAuxiliar,
-        linkedId: req.body.linkedId,
-      }
+        isAuxiliar: req.body.isAuxiliar,      }
     });
     res.status(201).json(user);
   } catch (error) {
