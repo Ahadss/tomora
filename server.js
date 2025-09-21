@@ -121,16 +121,18 @@ app.post('/remindersSearch', async (req, res) => {
 // Retorna o lembrete mais próximo ao horário atual
 app.post('/reminderNearest', async (req, res) => {
   try {
-    // Encontra o lembrete mais próximo
-    const nearestReminder = await prisma.reminder.findFirst({
+    const {currentTime} = req.body.hour;
+    let nearestReminder = await prisma.reminder.findFirst({
       where: {
-        userId: req.body.userId,
-        hour: req.body.hour,
+        userId: userId,
+        hour: {
+          gte: currentTime, // Lembretes com hora maior ou igual à atual
+        },
       },
       orderBy: {
-        hour: 'asc'
+        hour: 'asc', // Ordena por hora crescente
       },
-      take: 1
+      take: 1,
     });
 
     if (!nearestReminder) {
