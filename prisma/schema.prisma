@@ -40,5 +40,5 @@ model History {
   reminderId String
   hour String
   taken Boolean?
-  createdAt DateTime @default(now())
+  createdAt String
 }
