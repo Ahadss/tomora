@@ -199,7 +199,7 @@ app.post('/historySearch', async (req, res) => {
         userId: req.body.userId
       },
       orderBy: {
-        createdAt: 'desc'
+        id: 'desc'
       }
     });
     res.status(200).json(histories);
