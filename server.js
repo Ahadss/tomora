@@ -19,7 +19,8 @@ app.post('/usersCreate', async (req, res) => {
         name: req.body.name,
         password: req.body.password,
         isMedicado: req.body.isMedicado,
-        isAuxiliar: req.body.isAuxiliar,      }
+        isAuxiliar: req.body.isAuxiliar,      
+      }
     });
     res.status(201).json(user);
   } catch (error) {
@@ -168,6 +169,43 @@ app.post('/remindersDelete', async (req, res) => {
     res.status(200).json({ message: "Lembrete excluído com sucesso." });
   } catch (error) {
     res.status(500).json({ error: "Erro ao excluir lembrete." });
+  }
+});
+
+//==HISTÓRICO==\\
+//Cria histórico
+app.post('/historyCreate', async (req, res) => {
+  try {
+    const history = await prisma.history.create({
+      data: {
+        userId: req.body.userId,
+        reminderId: req.body.reminderId,
+        hour: req.body.hour,
+        taken: req.body.taken,
+      }
+    });
+    res.status(201).json(history);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Falha ao criar histórico' });
+  }
+});
+
+//Consulta histórico de um usuário específico
+app.post('/historySearch', async (req, res) => {
+  try {
+    const histories = await prisma.history.findMany({
+      where: {
+        userId: req.body.userId
+      },
+      orderBy: {
+        createdAt: 'desc'
+      }
+    });
+    res.status(200).json(histories);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Falha ao consultar histórico' });
   }
 });
 
