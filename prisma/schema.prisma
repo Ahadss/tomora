@@ -37,8 +37,8 @@ model Reminder {
 model History {
   id String @id @map("_id") @db.ObjectId @default(auto())
   userId String
+  name String
   reminderId String
   hour String
   taken Boolean?
-  createdAt String
 }

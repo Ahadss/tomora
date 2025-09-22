@@ -183,6 +183,7 @@ app.post('/historyCreate', async (req, res) => {
       data: {
         userId: req.body.userId,
         reminderId: req.body.reminderId,
+        name: req.body.name,
         hour: req.body.hour,
         taken: req.body.taken,
         createdAt: new Date(), // Adiciona timestamp
