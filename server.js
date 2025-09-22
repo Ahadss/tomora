@@ -107,6 +107,9 @@ app.post('/remindersSearch', async (req, res) => {
     const reminders = await prisma.reminder.findMany({
       where: {
         userId: req.body.userId
+      },
+      orderBy: {
+        id: 'desc'
       }
     });
     res.status(200).json(reminders);
@@ -182,6 +185,7 @@ app.post('/historyCreate', async (req, res) => {
         reminderId: req.body.reminderId,
         hour: req.body.hour,
         taken: req.body.taken,
+        createdAt: new Date(), // Adiciona timestamp
       }
     });
     res.status(201).json(history);
