@@ -119,10 +119,10 @@ app.post('/remindersSearch', async (req, res) => {
   }
 });
 
-// Retorna o lembrete mais próximo ao horário atual
+//Retorna o lembrete mais próximo ao horário atual
 app.post('/reminderNearest', async (req, res) => {
   try {
-    // Extração e validação dos dados de entrada
+    //Extração e validação dos dados de entrada
     const userId = req.body.userId;
     const hour = req.body.hour;
     if (!userId) {
@@ -132,7 +132,7 @@ app.post('/reminderNearest', async (req, res) => {
       return res.status(400).json({ error: 'hour deve estar no formato HH:mm' });
     }
 
-    // Busca todos os lembretes do usuário
+    //Busca todos os lembretes do usuário
     const reminders = await prisma.reminder.findMany({
       where: {
         userId: userId,
@@ -142,15 +142,15 @@ app.post('/reminderNearest', async (req, res) => {
       },
     });
 
-    // Verifica se há lembretes
+    //Verifica se há lembretes
     if (!reminders || reminders.length === 0) {
       return res.status(404).json({ error: 'Nenhum lembrete cadastrado' });
     }
 
-    // Encontra o primeiro lembrete futuro (hour >= req.body.hour)
+    //Encontra o primeiro lembrete futuro (hour >= req.body.hour)
     const futureReminder = reminders.find(reminder => reminder.hour >= hour);
 
-    // Se houver lembrete futuro, retorna o primeiro; caso contrário, retorna o primeiro disponível
+    //Se houver lembrete futuro, retorna o primeiro; caso contrário, retorna o primeiro disponível
     const nearestReminder = futureReminder || reminders[0];
 
     res.status(200).json(nearestReminder);
@@ -159,6 +159,28 @@ app.post('/reminderNearest', async (req, res) => {
     res.status(500).json({ error: 'Falha ao consultar próximo lembrete!' });
   }
 });
+
+//Atualiza os lembretes
+app.post('/remindersUpdate', async (req, res) => {
+  try {
+    await prisma.reminder.update({
+      where: {
+        id: req.body.id
+      },
+      data: {
+        name: req.body.name,
+        dosage: req.body.dosage,
+        desc: req.body.desc,
+        hour: req.body.hour
+      }
+    });
+    
+    res.status(200).json(updatedReminder);
+  } catch (error) {
+    console.error("Erro ao atualizar lembrete:", error);
+    res.status(500).json({ error: "Falha ao atualizar lembrete" });
+  }
+}
 
 //Deletar lembretes
 app.post('/remindersDelete', async (req, res) => {
