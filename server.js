@@ -163,7 +163,7 @@ app.post('/reminderNearest', async (req, res) => {
 //Atualiza os lembretes
 app.post('/remindersUpdate', async (req, res) => {
   try {
-    await prisma.reminder.update({
+    const updatedReminder = await prisma.reminder.update({
       where: {
         id: req.body.id
       },
