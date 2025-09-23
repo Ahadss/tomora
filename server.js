@@ -160,21 +160,24 @@ app.post('/reminderNearest', async (req, res) => {
   }
 });
 
-//Atualiza os lembretes
+// Atualiza os lembretes (permite atualização parcial)
 app.post('/remindersUpdate', async (req, res) => {
   try {
+    const data = {};
+    if (req.body.name) data.name = req.body.name;
+    if (req.body.dosage) data.dosage = req.body.dosage;
+    if (req.body.desc) data.desc = req.body.desc;
+    if (req.body.hour) data.hour = req.body.hour;
+
+    if (Object.keys(data).length === 0) {
+      return res.status(400).json({ error: 'Pelo menos um campo deve ser fornecido' });
+    }
+
     const updatedReminder = await prisma.reminder.update({
-      where: {
-        id: req.body.id
-      },
-      data: {
-        name: req.body.name,
-        dosage: req.body.dosage,
-        desc: req.body.desc,
-        hour: req.body.hour
-      }
+      where: { id: req.body.id },
+      data
     });
-    
+
     res.status(200).json(updatedReminder);
   } catch (error) {
     console.error("Erro ao atualizar lembrete:", error);
