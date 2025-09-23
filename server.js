@@ -180,7 +180,7 @@ app.post('/remindersUpdate', async (req, res) => {
     console.error("Erro ao atualizar lembrete:", error);
     res.status(500).json({ error: "Falha ao atualizar lembrete" });
   }
-}
+});
 
 //Deletar lembretes
 app.post('/remindersDelete', async (req, res) => {
