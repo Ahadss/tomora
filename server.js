@@ -106,7 +106,7 @@ app.post('/remindersSearch', async (req, res) => {
   try {
     const reminders = await prisma.reminder.findMany({
       where: {
-        userId: req.body.id
+        userId: req.body.searchId
       },
       orderBy: {
         id: 'desc'
