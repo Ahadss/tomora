@@ -4,7 +4,12 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node server.js",
+    "build": "npx prisma generate",
+    "postinstall": "npx prisma generate",
+    "deploy": "npx prisma generate && npx prisma db push",
+    "prisma:generate": "npx prisma generate",
+    "prisma:push": "npx prisma db push"
   },
   "keywords": [],
   "author": "",
