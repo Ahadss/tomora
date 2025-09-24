@@ -238,6 +238,43 @@ app.post('/historySearch', async (req, res) => {
   }
 });
 
+// Endpoint para deletar registros sem nome
+app.delete('/cleanup-history', async (req, res) => {
+  try {
+    // Busca registros onde name é null, undefined ou string vazia
+    const problematicRecords = await prisma.history.findMany({
+      where: {
+        OR: [
+          { name: null },
+          { name: "" },
+          { name: { equals: undefined } }
+        ]
+      }
+    });
+
+    console.log('Registros problemáticos encontrados:', problematicRecords.length);
+
+    // Deleta os registros problemáticos
+    const deleteResult = await prisma.history.deleteMany({
+      where: {
+        OR: [
+          { name: null },
+          { name: "" }
+        ]
+      }
+    });
+
+    res.json({
+      message: 'Limpeza concluída',
+      deletedCount: deleteResult.count,
+      problematicRecords: problematicRecords
+    });
+  } catch (error) {
+    console.error('Erro na limpeza:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 //==ACCOUNT LINKING PARA ALEXA==\\
 // Configurações para testes
 const CLIENT_ID = 'tomora-skill-test-1234567890';
