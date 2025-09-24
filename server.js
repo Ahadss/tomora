@@ -16,7 +16,7 @@ app.post('/usersCreate', async (req, res) => {
     const user = await prisma.user.create({
       data: {
         email: req.body.email,
-        title: req.body.title,
+        name: req.body.name,
         password: req.body.password,
         isMedicado: req.body.isMedicado,
         isAuxiliar: req.body.isAuxiliar,      
