@@ -239,6 +239,112 @@ app.post('/historySearch', async (req, res) => {
   }
 });
 
+//==ACCOUNT LINKING PARA ALEXA==\\
+// Configurações para testes
+const CLIENT_ID = 'tomora-skill-test-1234567890';
+const CLIENT_SECRET = 'x9kPqW7mZ3tR8vY2nJ5bL6cF4hT1rQ8w';
+
+// Simula armazenamento temporário de códigos de autorização (em produção, use Redis ou DB com expiração)
+const authCodes = new Map(); // Map para armazenar { code: { userId, expires } }
+
+// Endpoint de autorização (OAuth 2.0)
+app.get('/auth', async (req, res) => {
+  const { response_type, client_id, state, redirect_uri } = req.query;
+
+  // Valida parâmetros
+  if (response_type !== 'code' || client_id !== CLIENT_ID) {
+    return res.status(400).json({ error: 'Parâmetros inválidos' });
+  }
+
+  // Para testes, simulamos um login com email/senha fixos
+  // Substitua por uma página de login real ou integração com o app
+  const email = req.query.email || 'test@example.com'; // Para testes, hardcoded
+  const password = req.query.password || 'teste123'; // Para testes, hardcoded
+
+  try {
+    const user = await prisma.user.findFirst({
+      where: { email }
+    });
+
+    if (!user || user.password !== password) { // Ajuste para bcrypt.compare se usar hash
+      return res.status(401).json({ error: 'Credenciais inválidas' });
+    }
+
+    // Gera um código de autorização único
+    const code = `code_${Date.now()}_${Math.random().toString(36).substring(2)}`;
+    authCodes.set(code, {
+      userId: user.id,
+      expires: Date.now() + 5 * 60 * 1000 // Expira em 5 minutos
+    });
+
+    // Redireciona para o redirect_uri com o code e state
+    const redirectUrl = new URL(redirect_uri);
+    redirectUrl.searchParams.append('code', code);
+    redirectUrl.searchParams.append('state', state);
+    res.redirect(redirectUrl.toString());
+  } catch (error) {
+    console.error('Erro no /auth:', error);
+    res.status(500).json({ error: 'Falha ao autenticar' });
+  }
+});
+
+// Endpoint para trocar code por access_token
+app.post('/token', async (req, res) => {
+  const { grant_type, code, client_id, client_secret } = req.body;
+
+  // Valida parâmetros
+  if (
+    grant_type !== 'authorization_code' ||
+    client_id !== CLIENT_ID ||
+    client_secret !== CLIENT_SECRET
+  ) {
+    return res.status(401).json({ error: 'Credenciais inválidas' });
+  }
+
+  // Verifica o código de autorização
+  const authData = authCodes.get(code);
+  if (!authData || authData.expires < Date.now()) {
+    return res.status(400).json({ error: 'Código inválido ou expirado' });
+  }
+
+  // Gera um access_token (para testes, codificamos o userId em base64)
+  const accessToken = Buffer.from(JSON.stringify({ userId: authData.userId })).toString('base64');
+
+  // Remove o código após uso
+  authCodes.delete(code);
+
+  res.status(200).json({
+    access_token: accessToken,
+    token_type: 'bearer',
+    expires_in: 3600 // 1 hora
+  });
+});
+
+// Endpoint para validar access_token (usado pela skill)
+app.post('/validate-token', async (req, res) => {
+  const { token } = req.body;
+
+  try {
+    // Decodifica o token (para testes, usamos base64 simples)
+    const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
+    const userId = decoded.userId;
+
+    // Verifica se o usuário existe
+    const user = await prisma.user.findUnique({
+      where: { id: userId }
+    });
+
+    if (!user) {
+      return res.status(401).json({ error: 'Usuário não encontrado' });
+    }
+
+    res.status(200).json({ userId });
+  } catch (error) {
+    console.error('Erro ao validar token:', error);
+    res.status(400).json({ error: 'Token inválido' });
+  }
+});
+
 // Inicialização
 const PORT = process.env.PORT || 3000;
 
