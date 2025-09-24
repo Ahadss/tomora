@@ -210,8 +210,7 @@ app.post('/historyCreate', async (req, res) => {
         reminderId: req.body.reminderId,
         name: req.body.name,
         hour: req.body.hour,
-        taken: req.body.taken,
-        createdAt: new Date(), // Adiciona timestamp
+        taken: req.body.taken
       }
     });
     res.status(201).json(history);
