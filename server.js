@@ -238,8 +238,6 @@ app.post('/historySearch', async (req, res) => {
   }
 });
 
-const deleteResult = await prisma.history.deleteMany({});
-
 //==ACCOUNT LINKING PARA ALEXA==\\
 // Configurações para testes
 const CLIENT_ID = 'tomora-skill-test-1234567890';
