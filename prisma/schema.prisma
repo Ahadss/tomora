@@ -31,7 +31,6 @@ model Reminder {
   desc String?
   hour String
   callAlexa Boolean @default(false)
-  createdAt DateTime @default(now())
 }
 
 model History {
